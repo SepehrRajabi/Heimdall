@@ -39,7 +39,7 @@ const VideoPlayer = () => {
                             // Get the data and send it to the browser via the controller
                             controller.enqueue(value);
                             setSegments((v) => {
-                                v = [...v, value]
+                                v = [...v, value];
                                 return v;
                             });
                             // Check chunks
@@ -54,17 +54,19 @@ const VideoPlayer = () => {
             console.log(stream);
             new Response(stream, { headers: { "Content-Type": "text/html" }}).text();
         }).then((result) => console.log(result));
-        video.current.src = URL.createObjectURL(mediaSource.current);
+        // video.current.src = URL.createObjectURL(mediaSource.current);
     },
     []);
 
     useEffect(() => {
         console.log("segment's length: ", segments.length);
-        if (segments.length != 0 && !flag.current) {
+        if (segments.length > 10 && !flag.current) {
+            console.log("first segment triggered");
             flag.current = true;
             mediaSource.current.addEventListener("sourceopen", appendFirstSegment);
+            video.current.src = URL.createObjectURL(mediaSource.current);
         }
-    }, 
+    },
     [segments]
     );
 
@@ -87,14 +89,11 @@ const VideoPlayer = () => {
             console.log(mp4.tools.inspect(data));
             transmuxer.current.off("data");
         })
-        console.log("gholam 2");
+        console.log("gholam 3");
 
         transmuxer.current.push(segments[0]);
-        setSegments((v) => {
-            v.shift();
-            return v;
-        })
-        transmuxer.current.push();
+        setSegments((v) => v.filter((_, i) => i != 0));
+        // transmuxer.current.push();
         transmuxer.current.flush();
     }
 
